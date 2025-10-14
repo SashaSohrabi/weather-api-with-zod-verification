@@ -1,6 +1,7 @@
 import { useActionState, useId, useState } from 'react';
 import type { Weather } from './types';
 import { WeatherSchema } from './schemas/WeatherSchemas';
+import z from 'zod';
 
 const key = import.meta.env.VITE_API_KEY;
 
@@ -51,16 +52,16 @@ async function weatherAction(
       return { data: null, error: info };
     }
 
-    const parsed = WeatherSchema.safeParse(payload);
+    const { data, error, success } = WeatherSchema.safeParse(payload);
 
-    if (!parsed.success) {
+    if (!success) {
       return {
         data: null,
-        error: 'Received weather data in an unexpected format.',
+        error: z.prettifyError(error),
       };
     }
 
-    return { data: parsed.data, error: null };
+    return { data: data, error: null };
   } catch (error) {
     const message =
       error instanceof Error
